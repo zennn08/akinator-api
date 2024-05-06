@@ -3,5 +3,5 @@
 ## Install
 
 ```bash
-npm install @zennn08/akinator-api
+npm install @aqul/akinator-api
 ```
