@@ -5,15 +5,13 @@ import { region } from "../constants/Config"
 export interface AkinatorConstructor {
   region?: region
   childMode?: boolean
-  config?: AxiosRequestConfig
+  baseUrlServerAPI: string
 }
 
 export interface ResponseSetupAki {
-  session: string
-  signature: string
+  id: string
   question: string
-  baseUrl: string
-  sid: number
+  baseUrlServerAPI: string
 }
 
 export enum AkinatorAnswer {
@@ -25,33 +23,27 @@ export enum AkinatorAnswer {
 }
 
 export interface AkinatorAPIAnswerResponse {
-  status: number
-  data: {
-    completion: "OK" | "KO" | "SOUNDLIKE"
-    akitude: string
-    step: string
-    progression: string
-    question_id: string
-    question: string
-    id_proposition: string
-    id_base_proposition: string
-    valide_contrainte: string
-    name_proposition: string
-    description_proposition: string
-    flag_photo: string
-    photo: string
-    pseudo: string
-    nb_elements: number
-  }
+  completion: "OK" | "KO" | "SOUNDLIKE"
+  akitude: string
+  step: string
+  progression: string
+  question_id: string
+  question: string
+  id_proposition: string
+  id_base_proposition: string
+  valide_contrainte: string
+  name_proposition: string
+  description_proposition: string
+  flag_photo: string
+  photo: string
+  pseudo: string
+  nb_elements: number
 }
 
 export interface AkinatorAPICancelAnswerResponse {
-  status: number
-  data: {
-    akitude: string
-    step: string
-    progression: string
-    question_id: string
-    question: string
-  }
+  akitude: string
+  step: string
+  progression: string
+  question_id: string
+  question: string
 }

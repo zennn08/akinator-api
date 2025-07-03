@@ -1,7 +1,8 @@
-import { AxiosRequestConfig } from "axios"
+import axios, { AxiosRequestConfig } from "axios"
+
 import { region, regions } from "./constants/Config"
-import { AkinatorAPIAnswerResponse, AkinatorAPICancelAnswerResponse, AkinatorAnswer, AkinatorConstructor } from "./types/Aki"
 import { request, setupAki } from "./functions/Request"
+import { AkinatorAnswer, AkinatorAPIAnswerResponse, AkinatorAPICancelAnswerResponse, AkinatorConstructor } from "./types/Aki"
 
 export class Akinator {
   step: number
@@ -13,6 +14,8 @@ export class Akinator {
   sugestion_desc: string
   sugestion_photo: string
 
+  private id: string
+  private baseUrlServerAPI: string
   private session: string
   private signature: string
   private baseUrl: string
@@ -22,40 +25,29 @@ export class Akinator {
 
   private config: AxiosRequestConfig = {}
 
-  constructor({ region = "en", childMode, config }: AkinatorConstructor) {
+  constructor({ region = "en", childMode, baseUrlServerAPI }: AkinatorConstructor) {
     if (!regions.includes(region)) throw new Error("Please insert a correct region!")
 
     this.step = 0
     this.region = region
     this.childMode = childMode
     this.progress = 0.0
-
-    if (config) this.config = config
+    this.baseUrlServerAPI = baseUrlServerAPI
   }
 
   async start() {
-    const { session, signature, question, baseUrl, sid } = await setupAki(this.region, this.childMode, this.config)
-    if (!session || !signature || !question) throw new Error("Failed to get session and signature")
+    const { id, question } = await setupAki(this.region, this.childMode, this.baseUrlServerAPI)
+    if (!id || !question) throw new Error("Failed to get id session")
 
-    this.session = session
-    this.signature = signature
-    this.baseUrl = baseUrl
-    this.sid = sid
+    this.id = id
     this.question = question
   }
 
   async answer(answ: AkinatorAnswer) {
-    const data = {
-      step: this.step,
-      progression: this.progress,
-      sid: this.sid,
-      cm: this.childMode === true,
-      answer: answ,
-      step_last_proposition: this.step_last ?? "",
-      session: this.session,
-      signature: this.signature
-    }
-    const { status, data: result } = await request<AkinatorAPIAnswerResponse>(this.baseUrl + "/answer", data, this.config)
+    const {
+      status,
+      data: { data: result }
+    } = await axios.get<{ data: AkinatorAPIAnswerResponse }>(this.baseUrlServerAPI + `/answer?id=${this.id}&answer=${answ}`)
     if (status != 200 || result.completion !== "OK") throw new Error("Failed making request, status : " + status)
     if (result.id_proposition) {
       this.sugestion_name = result.name_proposition
@@ -70,15 +62,10 @@ export class Akinator {
   }
 
   async cancelAnswer() {
-    const data = {
-      step: this.step,
-      progression: this.progress,
-      sid: this.sid,
-      cm: this.childMode === true,
-      session: this.session,
-      signature: this.signature
-    }
-    const { status, data: result } = await request<AkinatorAPICancelAnswerResponse>(this.baseUrl + "/cancel_answer", data, this.config)
+    const {
+      status,
+      data: { data: result }
+    } = await axios.get<{ data: AkinatorAPICancelAnswerResponse }>(this.baseUrlServerAPI + `/cancel-answer?id=${this.id}`)
     if (status != 200) throw new Error("Failed making request, status : " + status)
     this.step = parseInt(result.step)
     this.progress = parseFloat(result.progression)

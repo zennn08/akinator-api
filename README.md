@@ -1,5 +1,13 @@
 # Akinator API
 
+## ⚠️ Important Notice
+
+This npm module is designed to work with the server API from [https://github.com/zennn08/akinator-server-api](https://github.com/zennn08/akinator-server-api).
+
+Since scraping akinator.com now requires Puppeteer for proper functionality, I have created a separate server API using Puppeteer. This client library connects to that server API to provide a clean, simple interface for interacting with Akinator.
+
+**You need to deploy your own server using the code from the GitHub repository above**
+
 ## Install
 
 ```bash
@@ -9,16 +17,18 @@ npm install @aqul/akinator-api
 ## Usage
 
 ### Simple Usage
+
 ```js
 const { Akinator, AkinatorAnswer } = require("@aqul/akinator-api")
 
 const run = async () => {
   const region = "en"
-  const api = new Akinator({ region, childMode: false })
+  const baseUrlServerAPI = "http://localhost:3000/api/v1"
+  const api = new Akinator({ baseUrlServerAPI, region, childMode: false })
   await api.start()
   console.log(`Question: ${api.question}, progress: ${api.progress}`)
 
-    // To answer
+  // To answer
   await api.answer(AkinatorAnswer.Yes) // or you can use 0-4
   console.log(`Question: ${api.question}, progress: ${api.progress}`)
 
@@ -46,26 +56,40 @@ run()
 ```
 
 ### To check region
+
 ```js
 const { regions } = require("@aqul/akinator-api")
 console.log(regions)
 ```
 
-### Use proxy
-```js
-const { Akinator } = require("@aqul/akinator-api")
-const tunnel = require("tunnel")
+## Direct Scraping Version
 
-const httpsAgent = tunnel.httpsOverHttp({
-  proxy: {
-    host: "xxx.xxx.xxx",
-    port: 8080,
-    proxyAuth: "username:password"
-  }
-})
+If you prefer to use the version that directly scrapes akinator.com without requiring a separate server API, you can install version 1.0.1:
 
-const region = "en"
-const api = new Akinator({ region, childMode: false, config: {
-  httpsAgent
-}})
+```bash
+npm install @aqul/akinator-api@1.0.1
 ```
+
+**Note**: The direct scraping version (1.0.1) may be less reliable due to anti-bot measures and may require additional configuration for proper functionality.
+
+## Server API
+
+This library requires a server API to handle the Puppeteer-based scraping. You need to:
+
+**Deploy your own server**: Clone and deploy from [https://github.com/zennn08/akinator-server-api](https://github.com/zennn08/akinator-server-api)
+
+## Why a separate server?
+
+Modern web scraping of akinator.com requires:
+
+- Puppeteer with real browser simulation
+- Complex session management
+- Browser resource handling
+- Anti-bot detection circumvention
+
+By separating the server API, we can:
+
+- Keep the client library lightweight
+- Handle complex browser operations on the server
+- Provide a simple API interface
+- Allow for better scalability and maintenance
